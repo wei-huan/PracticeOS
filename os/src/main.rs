@@ -1,7 +1,7 @@
 // os/src/main.rs
 
-#![no_std]
 #![no_main]
+#![no_std]
 #![feature(global_asm)]
 #![feature(asm)]
 #![feature(panic_info_message)]
@@ -23,6 +23,7 @@ fn clear_bss() {
     });
 }
 
+#[cfg(feature = "INFO")]
 fn show_memory_layout() {
     extern "C"{
         fn BASE_ADDRESS();
@@ -68,7 +69,10 @@ fn show_memory_layout() {
 #[no_mangle]
 pub fn rust_main() -> ! {
     clear_bss();
+
+    #[cfg(feature = "INFO")]
     show_memory_layout();
+
     info!("Hello, world!");
     warn!("Hello, world!");
     error!("Hello, world!");
