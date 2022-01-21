@@ -1,7 +1,7 @@
 ch1 作业
 log截图:
 
-[!avatar](log.png)
+![avatar](log.png)
 
 rustsbi委托的异常/中断
 
