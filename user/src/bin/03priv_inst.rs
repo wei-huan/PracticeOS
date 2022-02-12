@@ -1,8 +1,10 @@
 #![no_std]
 #![no_main]
 
-#[macro_use]
-extern crate user_lib;
+// #[macro_use]
+// extern crate user_lib;
+
+use user_lib::println;
 
 use core::arch::asm;
 #[no_mangle]

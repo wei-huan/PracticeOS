@@ -1,4 +1,6 @@
 use lazy_static::*;
+
+// Trap上下文
 use crate::trap::TrapContext;
 use crate::sync::UPSafeCell;
 use core::arch::asm;
@@ -23,9 +25,13 @@ static KERNEL_STACK: KernelStack = KernelStack { data: [0; KERNEL_STACK_SIZE] };
 static USER_STACK: UserStack = UserStack { data: [0; USER_STACK_SIZE] };
 
 impl KernelStack {
+
+    // 获取内核栈栈底
     fn get_sp(&self) -> usize {
         self.data.as_ptr() as usize + KERNEL_STACK_SIZE
     }
+
+    // push_context函数返回值是内核栈压入 Trap 上下文之后的栈底，多道系统只有一个程序在运行，也就是只可能有一个程序在栈中
     pub fn push_context(&self, cx: TrapContext) -> &'static mut TrapContext {
         let cx_ptr = (self.get_sp() - core::mem::size_of::<TrapContext>()) as *mut TrapContext;
         unsafe { *cx_ptr = cx; }
@@ -83,6 +89,8 @@ impl AppManager {
     }
 }
 
+// 相当于读取配置文件到AppManager
+// UPSafeCell允许我们在单核uniprocessor上安全使用可变全局变量
 lazy_static! {
     static ref APP_MANAGER: UPSafeCell<AppManager> = unsafe { UPSafeCell::new({
         extern "C" { fn _num_app(); }
@@ -105,6 +113,7 @@ pub fn init() {
     print_app_info();
 }
 
+// exclusive_access函数会把UPSafeCell作为可变借用给别的变量，会先判断是否被借出去，确保独占访问
 pub fn print_app_info() {
     APP_MANAGER.exclusive_access().print_app_info();
 }
@@ -117,9 +126,12 @@ pub fn run_next_app() -> ! {
     }
     app_manager.move_to_next_app();
     drop(app_manager);
+
     // before this we have to drop local variables related to resources manually
     // and release the resources
     extern "C" { fn __restore(cx_addr: usize); }
+
+    //__restore需要一个参数
     unsafe {
         __restore(KERNEL_STACK.push_context(
             TrapContext::app_init_context(APP_BASE_ADDRESS, USER_STACK.get_sp())

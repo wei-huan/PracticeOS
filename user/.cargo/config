@@ -1,7 +1,11 @@
 [build]
 target = "riscv64gc-unknown-none-elf"
 
+[profile.dev]
+opt-level = 1 # 就是opt-level > 0, 默认dev profile的 opt-level = 0 就是不优化
+
 [target.riscv64gc-unknown-none-elf]
+# 指定cargo工程的链接文件
 rustflags = [
-    "-Clink-args=-Tsrc/linker.ld",
+    "-Clink-args=-Tsrc/linker.ld"
 ]

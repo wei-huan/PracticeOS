@@ -10,6 +10,7 @@
     .globl __restore
     .align 2
 __alltraps:
+    # sscratch原本存放kernel stack地址
     csrrw sp, sscratch, sp
     # now sp->kernel stack, sscratch->user stack
     # allocate a TrapContext on kernel stack

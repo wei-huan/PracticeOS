@@ -14,8 +14,10 @@ use crate::syscall::syscall;
 use crate::batch::run_next_app;
 use core::arch::global_asm;
 
+// 相当于C语言的include
 global_asm!(include_str!("trap.S"));
 
+// 将stvec寄存器设置为陷入处理的入口点函数__alltraps, stvec保存了中断处理的入口地址。
 pub fn init() {
     extern "C" { fn __alltraps(); }
     unsafe {
@@ -23,6 +25,7 @@ pub fn init() {
     }
 }
 
+// all_trap函数会调用trap_handler, trap_handler根据scause和stval选择对应操作
 #[no_mangle]
 pub fn trap_handler(cx: &mut TrapContext) -> &mut TrapContext {
     let scause = scause::read();
