@@ -127,3 +127,15 @@ pub fn run_next_app() -> ! {
     }
     panic!("Unreachable in batch::run_current_app!");
 }
+
+pub fn get_cur_app_lowlimit() -> usize {
+    // APP_BASE_ADDRESS + APP_SIZE_LIMIT
+    extern "C" {
+        fn BASE_ADDRESS();
+    }
+    BASE_ADDRESS as usize
+}
+
+pub fn get_cur_app_uplimit() -> usize {
+    APP_BASE_ADDRESS + APP_SIZE_LIMIT
+}
