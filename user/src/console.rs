@@ -1,6 +1,5 @@
-// user/src/console.rs
-use core::fmt::{self, Write};
 use super::write;
+use core::fmt::{self, Write};
 
 struct Stdout;
 

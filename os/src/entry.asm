@@ -1,13 +1,12 @@
-# os/src/entry.asm
-    .section    .text.entry
-    .globl  _start
+    .section .text.entry
+    .globl _start
 _start:
-    la  sp, boot_stack_top
-    call    rust_main
+    la sp, boot_stack_top
+    call rust_main
 
-    .section    .bss.stack
-    .globl  boot_stack
+    .section .bss.stack
+    .globl boot_stack
 boot_stack:
-    .space  4096 * 16
-    .globl  boot_stack_top
+    .space 4096 * 16
+    .globl boot_stack_top
 boot_stack_top:
