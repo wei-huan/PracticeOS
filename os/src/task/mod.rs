@@ -10,6 +10,9 @@ use lazy_static::*;
 use switch::__switch;
 use task::{TaskControlBlock, TaskStatus};
 
+const TASK_MIN_PRIORITY: isize = 2;
+const TASK_INIT_PRIORITY: isize = 16;
+
 pub use context::TaskContext;
 
 pub struct TaskManager {
@@ -28,6 +31,7 @@ lazy_static! {
         let mut tasks = [TaskControlBlock {
             task_cx: TaskContext::zero_init(),
             task_status: TaskStatus::UnInit,
+            task_prio: TASK_INIT_PRIORITY,
         }; MAX_APP_NUM];
         for (i, task) in tasks.iter_mut().enumerate() {
             task.task_cx = TaskContext::goto_restore(init_app_cx(i));
@@ -98,6 +102,17 @@ impl TaskManager {
             panic!("All applications completed!");
         }
     }
+
+    fn set_current_task_priority(&self, prio: isize) -> isize{
+        if prio >= TASK_MIN_PRIORITY {
+            let mut inner = self.inner.exclusive_access();
+            let current = inner.current_task;
+            inner.tasks[current].task_prio = prio;
+            prio
+        } else {
+            return -1;
+        }
+    }
 }
 
 pub fn run_first_task() {
@@ -124,4 +139,8 @@ pub fn suspend_current_and_run_next() {
 pub fn exit_current_and_run_next() {
     mark_current_exited();
     run_next_task();
+}
+
+pub fn set_current_priority(prio: isize) -> isize {
+    TASK_MANAGER.set_current_task_priority(prio)
 }

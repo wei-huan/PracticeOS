@@ -1,12 +1,13 @@
 #![no_std]
 #![no_main]
-#![feature(asm)]
 
 #[macro_use]
 extern crate user_lib;
 extern crate core;
 use core::slice;
-use user_lib::{write, STDOUT};
+use user_lib::console::{STDOUT};
+use user_lib::{write};
+use core::arch::asm;
 
 /// 正确输出：
 /// Test write0 OK!
