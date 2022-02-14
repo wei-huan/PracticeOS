@@ -17,9 +17,16 @@ binary: elf
 		$(OBJCOPY) $(elf) --strip-all -O binary $(patsubst $(TARGET_DIR)/%, $(TARGET_DIR)/%.bin, $(elf)); \
 		cp $(elf) $(patsubst $(TARGET_DIR)/%, $(TARGET_DIR)/%.elf, $(elf));)
 
-build: binary
+pre:
+	@mkdir -p $(BUILD_DIR)/bin/
+	@mkdir -p $(BUILD_DIR)/elf/
+	@mkdir -p $(BUILD_DIR)/app/
+	@$(foreach t, $(APPS), cp $(t) $(BUILD_DIR)/app/;)
+
+build: clean pre binary
+	@$(foreach t, $(ELFS), cp $(t).bin $(BUILD_DIR)/bin/;)
+	@$(foreach t, $(ELFS), cp $(t).elf $(BUILD_DIR)/elf/;)
 
 clean:
 	@cargo clean
-
-.PHONY: elf binary build clean
+	@rm -rf $(BUILD_DIR)
