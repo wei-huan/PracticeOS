@@ -6,8 +6,8 @@ const FD_STDOUT: usize = 1;
 pub fn sys_write(fd: usize, buf: *const u8, len: usize) -> isize {
     // println!("addr: {:?}", buf);
 
-    if (buf as usize) >= get_cur_app_uplimit() || (buf as usize) < get_cur_app_lowlimit() {
-        panic!("illegal Address write");
+    if (buf as usize) >= 0x80207000 || (buf as usize) < 0x80207000 {
+        return -1;
     }
 
     match fd {
