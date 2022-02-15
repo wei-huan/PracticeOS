@@ -5,6 +5,7 @@ pub struct TaskControlBlock {
     pub task_status: TaskStatus,
     pub task_cx: TaskContext,
     pub task_prio: isize,
+    pub task_stride: isize,
 }
 
 #[derive(Copy, Clone, PartialEq)]
