@@ -16,7 +16,7 @@ use crate::console::*;
 const TASK_MIN_PRIORITY: isize = 2;
 const TASK_INIT_PRIORITY: isize = 16;
 
-const BIGSTRIDE: isize = 65535;
+const BIGSTRIDE: isize = 100000000;
 
 pub use context::TaskContext;
 
@@ -60,6 +60,7 @@ impl TaskManager {
         let mut inner = self.inner.exclusive_access();
         let task0 = &mut inner.tasks[0];
         task0.task_status = TaskStatus::Running;
+        task0.task_stride += BIGSTRIDE / task0.task_prio;
         let next_task_cx_ptr = &task0.task_cx as *const TaskContext;
         drop(inner);
         let mut _unused = TaskContext::zero_init();
@@ -96,23 +97,26 @@ impl TaskManager {
         let min_stride = (current + 1..current + self.num_app + 1)
             .filter(|id| inner.tasks[id % self.num_app].task_status == TaskStatus::Ready)
             .map(|id| inner.tasks[id % self.num_app].task_stride)
-            .min()
-            .unwrap();
+            .min();
 
         // println!("min_crate: {}", min_stride);
+        if min_stride == None {
+            return None;
+        }
 
         (current + 1..current + self.num_app + 1)
         .map(|id| id % self.num_app)
         .find(|id| {
             inner.tasks[*id].task_status == TaskStatus::Ready &&
-            inner.tasks[*id].task_stride == min_stride })
+            inner.tasks[*id].task_stride == min_stride.unwrap() })
     }
 
     fn run_next_task(&self) {
-        if let Some(next) = self.find_next_task() {
+        if let Some(next) = self.find_next_task_stride() {
             let mut inner = self.inner.exclusive_access();
             let current = inner.current_task;
             inner.tasks[next].task_status = TaskStatus::Running;
+            inner.tasks[next].task_stride += BIGSTRIDE / inner.tasks[next].task_prio;
             inner.current_task = next;
             let current_task_cx_ptr = &mut inner.tasks[current].task_cx as *mut TaskContext;
             let next_task_cx_ptr = &inner.tasks[next].task_cx as *const TaskContext;
@@ -132,7 +136,8 @@ impl TaskManager {
             let mut inner = self.inner.exclusive_access();
             let current = inner.current_task;
             inner.tasks[current].task_prio = prio;
-            prio
+            // println!("current prio: {}", inner.tasks[current].task_prio);
+            inner.tasks[current].task_prio
         } else {
             return -1;
         }
