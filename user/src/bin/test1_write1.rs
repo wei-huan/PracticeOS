@@ -3,8 +3,7 @@
 
 #[macro_use]
 extern crate user_lib;
-use user_lib::console::{STDOUT};
-use user_lib::{write};
+use user_lib::{write, STDOUT};
 const DATA_STRING: &str = "string from data section\n";
 
 /// 正确输出：
