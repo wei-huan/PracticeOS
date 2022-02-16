@@ -3,20 +3,13 @@ mod switch;
 #[allow(clippy::module_inception)]
 mod task;
 
-use crate::config::MAX_APP_NUM;
-use crate::loader::{get_num_app, init_app_cx};
+use crate::loader::{get_app_data, get_num_app};
 use crate::sync::UPSafeCell;
+use crate::trap::TrapContext;
+use alloc::vec::Vec;
 use lazy_static::*;
 use switch::__switch;
 use task::{TaskControlBlock, TaskStatus};
-
-#[macro_use]
-use crate::console::*;
-
-const TASK_MIN_PRIORITY: isize = 2;
-const TASK_INIT_PRIORITY: isize = 16;
-
-const BIGSTRIDE: isize = 100000000;
 
 pub use context::TaskContext;
 
@@ -26,22 +19,18 @@ pub struct TaskManager {
 }
 
 struct TaskManagerInner {
-    tasks: [TaskControlBlock; MAX_APP_NUM],
+    tasks: Vec<TaskControlBlock>,
     current_task: usize,
 }
 
 lazy_static! {
     pub static ref TASK_MANAGER: TaskManager = {
+        println!("init TASK_MANAGER");
         let num_app = get_num_app();
-        let mut tasks = [TaskControlBlock {
-            task_cx: TaskContext::zero_init(),
-            task_status: TaskStatus::UnInit,
-            task_stride: 0,
-            task_prio: TASK_INIT_PRIORITY,
-        }; MAX_APP_NUM];
-        for (i, task) in tasks.iter_mut().enumerate() {
-            task.task_cx = TaskContext::goto_restore(init_app_cx(i));
-            task.task_status = TaskStatus::Ready;
+        println!("num_app = {}", num_app);
+        let mut tasks: Vec<TaskControlBlock> = Vec::new();
+        for i in 0..num_app {
+            tasks.push(TaskControlBlock::new(get_app_data(i), i));
         }
         TaskManager {
             num_app,
@@ -58,29 +47,28 @@ lazy_static! {
 impl TaskManager {
     fn run_first_task(&self) -> ! {
         let mut inner = self.inner.exclusive_access();
-        let task0 = &mut inner.tasks[0];
-        task0.task_status = TaskStatus::Running;
-        task0.task_stride += BIGSTRIDE / task0.task_prio;
-        let next_task_cx_ptr = &task0.task_cx as *const TaskContext;
+        let next_task = &mut inner.tasks[0];
+        next_task.task_status = TaskStatus::Running;
+        let next_task_cx_ptr = &next_task.task_cx as *const TaskContext;
         drop(inner);
         let mut _unused = TaskContext::zero_init();
         // before this, we should drop local variables that must be dropped manually
         unsafe {
-            __switch(&mut _unused as *mut TaskContext, next_task_cx_ptr);
+            __switch(&mut _unused as *mut _, next_task_cx_ptr);
         }
         panic!("unreachable in run_first_task!");
     }
 
     fn mark_current_suspended(&self) {
         let mut inner = self.inner.exclusive_access();
-        let current = inner.current_task;
-        inner.tasks[current].task_status = TaskStatus::Ready;
+        let cur = inner.current_task;
+        inner.tasks[cur].task_status = TaskStatus::Ready;
     }
 
     fn mark_current_exited(&self) {
         let mut inner = self.inner.exclusive_access();
-        let current = inner.current_task;
-        inner.tasks[current].task_status = TaskStatus::Exited;
+        let cur = inner.current_task;
+        inner.tasks[cur].task_status = TaskStatus::Exited;
     }
 
     fn find_next_task(&self) -> Option<usize> {
@@ -91,32 +79,21 @@ impl TaskManager {
             .find(|id| inner.tasks[*id].task_status == TaskStatus::Ready)
     }
 
-    fn find_next_task_stride(&self) -> Option<usize> {
+    fn get_current_token(&self) -> usize {
         let inner = self.inner.exclusive_access();
-        let current = inner.current_task;
-        let min_stride = (current + 1..current + self.num_app + 1)
-            .filter(|id| inner.tasks[id % self.num_app].task_status == TaskStatus::Ready)
-            .map(|id| inner.tasks[id % self.num_app].task_stride)
-            .min();
+        inner.tasks[inner.current_task].get_user_token()
+    }
 
-        // println!("min_crate: {}", min_stride);
-        if min_stride == None {
-            return None;
-        }
-
-        (current + 1..current + self.num_app + 1)
-        .map(|id| id % self.num_app)
-        .find(|id| {
-            inner.tasks[*id].task_status == TaskStatus::Ready &&
-            inner.tasks[*id].task_stride == min_stride.unwrap() })
+    fn get_current_trap_cx(&self) -> &'static mut TrapContext {
+        let inner = self.inner.exclusive_access();
+        inner.tasks[inner.current_task].get_trap_cx()
     }
 
     fn run_next_task(&self) {
-        if let Some(next) = self.find_next_task_stride() {
+        if let Some(next) = self.find_next_task() {
             let mut inner = self.inner.exclusive_access();
             let current = inner.current_task;
             inner.tasks[next].task_status = TaskStatus::Running;
-            inner.tasks[next].task_stride += BIGSTRIDE / inner.tasks[next].task_prio;
             inner.current_task = next;
             let current_task_cx_ptr = &mut inner.tasks[current].task_cx as *mut TaskContext;
             let next_task_cx_ptr = &inner.tasks[next].task_cx as *const TaskContext;
@@ -128,18 +105,6 @@ impl TaskManager {
             // go back to user mode
         } else {
             panic!("All applications completed!");
-        }
-    }
-
-    fn set_current_task_priority(&self, prio: isize) -> isize {
-        if prio >= 2 {
-            let mut inner = self.inner.exclusive_access();
-            let current = inner.current_task;
-            inner.tasks[current].task_prio = prio;
-            // println!("current prio: {}", inner.tasks[current].task_prio);
-            inner.tasks[current].task_prio
-        } else {
-            return -1;
         }
     }
 }
@@ -160,16 +125,20 @@ fn mark_current_exited() {
     TASK_MANAGER.mark_current_exited();
 }
 
-pub fn exit_current_and_run_next() {
-    mark_current_exited();
-    run_next_task();
-}
-
 pub fn suspend_current_and_run_next() {
     mark_current_suspended();
     run_next_task();
 }
 
-pub fn set_current_priority(prio: isize) -> isize {
-    TASK_MANAGER.set_current_task_priority(prio)
+pub fn exit_current_and_run_next() {
+    mark_current_exited();
+    run_next_task();
+}
+
+pub fn current_user_token() -> usize {
+    TASK_MANAGER.get_current_token()
+}
+
+pub fn current_trap_cx() -> &'static mut TrapContext {
+    TASK_MANAGER.get_current_trap_cx()
 }
