@@ -16,13 +16,17 @@ bitflags! {
     }
 }
 
+/// 页表项结构体 (PTE, Page Table Entry)
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct PageTableEntry {
     pub bits: usize,
 }
 
+// 页表项相关方法
 impl PageTableEntry {
+
+    // 创建一个页表项
     pub fn new(ppn: PhysPageNum, flags: PTEFlags) -> Self {
         PageTableEntry {
             bits: ppn.0 << 10 | flags.bits as usize,
@@ -51,6 +55,7 @@ impl PageTableEntry {
     }
 }
 
+// 页表结构体，就是物理页表
 pub struct PageTable {
     root_ppn: PhysPageNum,
     frames: Vec<FrameTracker>,
@@ -58,6 +63,8 @@ pub struct PageTable {
 
 /// Assume that it won't oom when creating/mapping.
 impl PageTable {
+
+    // 页表的创建就是创建根页表项,同时把页表项加入向量中
     pub fn new() -> Self {
         let frame = frame_alloc().unwrap();
         PageTable {
@@ -65,6 +72,8 @@ impl PageTable {
             frames: vec![frame],
         }
     }
+
+    // 临时创建一个专用来手动查页表的 PageTable ，它仅有一个从传入的 satp token 中得到的多级页表根节点的物理页号，它的 frames 字段为空，也即不实际控制任何资源；
     /// Temporarily used to get arguments from user space.
     pub fn from_token(satp: usize) -> Self {
         Self {
@@ -72,6 +81,8 @@ impl PageTable {
             frames: Vec::new(),
         }
     }
+
+    // 根据虚拟页号找第三级物理页帧，没有就创建
     fn find_pte_create(&mut self, vpn: VirtPageNum) -> Option<&mut PageTableEntry> {
         let idxs = vpn.indexes();
         let mut ppn = self.root_ppn;
@@ -91,10 +102,14 @@ impl PageTable {
         }
         result
     }
+
+    // 根据虚拟页号找第三级物理页帧
     fn find_pte(&self, vpn: VirtPageNum) -> Option<&mut PageTableEntry> {
         let idxs = vpn.indexes();
         let mut ppn = self.root_ppn;
         let mut result: Option<&mut PageTableEntry> = None;
+
+        // i 和 idx 是同时递增的
         for (i, idx) in idxs.iter().enumerate() {
             let pte = &mut ppn.get_pte_array()[*idx];
             if i == 2 {
@@ -108,10 +123,14 @@ impl PageTable {
         }
         result
     }
+
     #[allow(unused)]
+    // 创建虚拟地址到物理地址的映射时使用
     pub fn map(&mut self, vpn: VirtPageNum, ppn: PhysPageNum, flags: PTEFlags) {
         let pte = self.find_pte_create(vpn).unwrap();
         assert!(!pte.is_valid(), "vpn {:?} is mapped before mapping", vpn);
+
+        // 在第三级页表上填写物理地址相应的信息
         *pte = PageTableEntry::new(ppn, flags | PTEFlags::V);
     }
     #[allow(unused)]
@@ -120,9 +139,12 @@ impl PageTable {
         assert!(pte.is_valid(), "vpn {:?} is invalid before unmapping", vpn);
         *pte = PageTableEntry::empty();
     }
+
+    // 根据虚拟地址找第三级页表上相应的页表项
     pub fn translate(&self, vpn: VirtPageNum) -> Option<PageTableEntry> {
         self.find_pte(vpn).map(|pte| *pte)
     }
+
     pub fn token(&self) -> usize {
         8usize << 60 | self.root_ppn.0
     }

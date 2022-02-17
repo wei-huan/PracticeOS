@@ -140,6 +140,8 @@ impl From<PhysPageNum> for PhysAddr {
 }
 
 impl VirtPageNum {
+
+    // 获取多级页表的每级页框号
     pub fn indexes(&self) -> [usize; 3] {
         let mut vpn = self.0;
         let mut idx = [0usize; 3];

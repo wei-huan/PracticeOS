@@ -5,11 +5,15 @@ use alloc::vec::Vec;
 use core::fmt::{self, Debug, Formatter};
 use lazy_static::*;
 
+// 物理页号的进一步封装，把其实地址封装成内存页
 pub struct FrameTracker {
     pub ppn: PhysPageNum,
 }
 
+// 物理页号的进一步封装，遵循RAII思想
 impl FrameTracker {
+
+    // 创建时清空内存
     pub fn new(ppn: PhysPageNum) -> Self {
         // page cleaning
         let bytes_array = ppn.get_bytes_array();
@@ -32,12 +36,14 @@ impl Drop for FrameTracker {
     }
 }
 
+// 物理页帧管理器的泛型方法
 trait FrameAllocator {
     fn new() -> Self;
     fn alloc(&mut self) -> Option<PhysPageNum>;
     fn dealloc(&mut self, ppn: PhysPageNum);
 }
 
+// 栈式物理页帧管理器
 pub struct StackFrameAllocator {
     current: usize,
     end: usize,
@@ -110,7 +116,7 @@ fn frame_dealloc(ppn: PhysPageNum) {
 #[allow(unused)]
 pub fn frame_allocator_test() {
     let mut v: Vec<FrameTracker> = Vec::new();
-    for i in 0..5 {
+    for i in 0..500 {
         let frame = frame_alloc().unwrap();
         println!("{:?}", frame);
         v.push(frame);
