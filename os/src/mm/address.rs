@@ -141,7 +141,7 @@ impl From<PhysPageNum> for PhysAddr {
 
 impl VirtPageNum {
 
-    // 获取多级页表的每级页框号
+    // 根据虚拟地址获取多级页表的每级页框号
     pub fn indexes(&self) -> [usize; 3] {
         let mut vpn = self.0;
         let mut idx = [0usize; 3];
@@ -240,4 +240,6 @@ where
         }
     }
 }
+
+// VPNRange 描述一段虚拟页号的连续区间，表示该逻辑段在地址区间中的位置和长度。
 pub type VPNRange = SimpleRange<VirtPageNum>;

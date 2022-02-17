@@ -29,12 +29,15 @@ lazy_static! {
         Arc::new(unsafe { UPSafeCell::new(MemorySet::new_kernel()) });
 }
 
+// 地址空间结构体
+// 其实就是应用程序需要的几个段的集合
 pub struct MemorySet {
     page_table: PageTable,
     areas: Vec<MapArea>,
 }
 
 impl MemorySet {
+    // 新建一个新的地址空间
     pub fn new_bare() -> Self {
         Self {
             page_table: PageTable::new(),
@@ -44,6 +47,8 @@ impl MemorySet {
     pub fn token(&self) -> usize {
         self.page_table.token()
     }
+
+    // 当前地址空间插入一个 Framed 方式映射到物理内存的逻辑段
     /// Assume that no conflicts.
     pub fn insert_framed_area(
         &mut self,
@@ -71,6 +76,8 @@ impl MemorySet {
             PTEFlags::R | PTEFlags::X,
         );
     }
+
+    // 创建内核地址空间， 恒等映射
     /// Without kernel stacks.
     pub fn new_kernel() -> Self {
         let mut memory_set = Self::new_bare();
@@ -216,6 +223,8 @@ impl MemorySet {
     }
 }
 
+// 连续的虚拟地址区间，该区间内包含的所有虚拟页面都以一种相同的方式映射到物理页帧，具有可读/可写/可执行等属性。
+// 其实就是数据段，代码段和bss段那些的抽象
 pub struct MapArea {
     vpn_range: VPNRange,
     data_frames: BTreeMap<VirtPageNum, FrameTracker>,
@@ -224,6 +233,8 @@ pub struct MapArea {
 }
 
 impl MapArea {
+
+    // 创建某个虚拟段
     pub fn new(
         start_va: VirtAddr,
         end_va: VirtAddr,
@@ -239,6 +250,8 @@ impl MapArea {
             map_perm,
         }
     }
+
+    // 不是映射一个逻辑段，实际在映射一个页
     pub fn map_one(&mut self, page_table: &mut PageTable, vpn: VirtPageNum) {
         let ppn: PhysPageNum;
         match self.map_type {
@@ -254,6 +267,8 @@ impl MapArea {
         let pte_flags = PTEFlags::from_bits(self.map_perm.bits).unwrap();
         page_table.map(vpn, ppn, pte_flags);
     }
+
+    // 不是解映射一个逻辑段，实际在解映射一个页
     #[allow(unused)]
     pub fn unmap_one(&mut self, page_table: &mut PageTable, vpn: VirtPageNum) {
         if self.map_type == MapType::Framed {
@@ -261,17 +276,23 @@ impl MapArea {
         }
         page_table.unmap(vpn);
     }
+
+    // 映射一个逻辑段
     pub fn map(&mut self, page_table: &mut PageTable) {
         for vpn in self.vpn_range {
             self.map_one(page_table, vpn);
         }
     }
+
+    // 解映射一个逻辑段
     #[allow(unused)]
     pub fn unmap(&mut self, page_table: &mut PageTable) {
         for vpn in self.vpn_range {
             self.unmap_one(page_table, vpn);
         }
     }
+
+    //
     /// data: start-aligned but maybe with shorter length
     /// assume that all frames were cleared before
     pub fn copy_data(&mut self, page_table: &mut PageTable, data: &[u8]) {
@@ -298,11 +319,14 @@ impl MapArea {
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum MapType {
+    // 恒等映射，用于不需要虚拟内存的地方
     Identical,
+    // 用于多级页表
     Framed,
 }
 
 bitflags! {
+    // PTE的RWXU位
     pub struct MapPermission: u8 {
         const R = 1 << 1;
         const W = 1 << 2;
