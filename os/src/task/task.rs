@@ -6,7 +6,9 @@ use crate::trap::{trap_handler, TrapContext};
 pub struct TaskControlBlock {
     pub task_status: TaskStatus,
     pub task_cx: TaskContext,
+    // 应用的地址空间 memory_set
     pub memory_set: MemorySet,
+    // 位于应用地址空间次高页的 Trap 上下文被实际存放在物理页帧的物理页号
     pub trap_cx_ppn: PhysPageNum,
     pub base_size: usize,
 }
@@ -15,6 +17,8 @@ impl TaskControlBlock {
     pub fn get_trap_cx(&self) -> &'static mut TrapContext {
         self.trap_cx_ppn.get_mut()
     }
+
+    // 返回用户代码的satp
     pub fn get_user_token(&self) -> usize {
         self.memory_set.token()
     }

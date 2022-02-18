@@ -44,6 +44,8 @@ impl MemorySet {
             areas: Vec::new(),
         }
     }
+
+    // 返回satp
     pub fn token(&self) -> usize {
         self.page_table.token()
     }
@@ -68,10 +70,12 @@ impl MemorySet {
         }
         self.areas.push(map_area);
     }
+    // 映射跳板页面，也就是trap.s的__alltraps和__restore映射到这个页面
     /// Mention that trampoline is not collected by areas.
     fn map_trampoline(&mut self) {
         self.page_table.map(
             VirtAddr::from(TRAMPOLINE).into(),
+            // strampoline在linker文件中声明
             PhysAddr::from(strampoline as usize).into(),
             PTEFlags::R | PTEFlags::X,
         );
@@ -143,12 +147,15 @@ impl MemorySet {
         );
         memory_set
     }
+
+    // 根据ELF文件创建应用地址空间， 页表映射
     /// Include sections in elf and trampoline and TrapContext and user stack,
     /// also returns user_sp and entry point.
     pub fn from_elf(elf_data: &[u8]) -> (Self, usize, usize) {
         let mut memory_set = Self::new_bare();
         // map trampoline
         memory_set.map_trampoline();
+        // 调用外部库
         // map program headers of elf, with U flag
         let elf = xmas_elf::ElfFile::new(elf_data).unwrap();
         let elf_header = elf.header;
@@ -158,6 +165,7 @@ impl MemorySet {
         let mut max_end_vpn = VirtPageNum(0);
         for i in 0..ph_count {
             let ph = elf.program_header(i).unwrap();
+            // 类型是LOAD说明有必要加载到内核
             if ph.get_type().unwrap() == xmas_elf::program::Type::Load {
                 let start_va: VirtAddr = (ph.virtual_addr() as usize).into();
                 let end_va: VirtAddr = ((ph.virtual_addr() + ph.mem_size()) as usize).into();
@@ -211,10 +219,13 @@ impl MemorySet {
             elf.header.pt2.entry_point() as usize,
         )
     }
+
+    // 启用虚拟内存
     pub fn activate(&self) {
         let satp = self.page_table.token();
         unsafe {
             satp::write(satp);
+            // sfence.vma 指令将快表清空
             asm!("sfence.vma");
         }
     }

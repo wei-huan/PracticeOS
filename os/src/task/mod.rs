@@ -79,11 +79,13 @@ impl TaskManager {
             .find(|id| inner.tasks[*id].task_status == TaskStatus::Ready)
     }
 
+    // 返回当前应用的satp
     fn get_current_token(&self) -> usize {
         let inner = self.inner.exclusive_access();
         inner.tasks[inner.current_task].get_user_token()
     }
 
+    // 返回当前应用位于地址空间次高页的trapcontext页
     fn get_current_trap_cx(&self) -> &'static mut TrapContext {
         let inner = self.inner.exclusive_access();
         inner.tasks[inner.current_task].get_trap_cx()

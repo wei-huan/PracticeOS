@@ -5,7 +5,7 @@ use alloc::vec::Vec;
 use core::fmt::{self, Debug, Formatter};
 use lazy_static::*;
 
-// 物理页号的进一步封装，把其实地址封装成内存页
+// 物理页号的进一步封装，把起始地址封装成内存页
 pub struct FrameTracker {
     pub ppn: PhysPageNum,
 }
@@ -116,7 +116,7 @@ fn frame_dealloc(ppn: PhysPageNum) {
 #[allow(unused)]
 pub fn frame_allocator_test() {
     let mut v: Vec<FrameTracker> = Vec::new();
-    for i in 0..500 {
+    for i in 0..5 {
         let frame = frame_alloc().unwrap();
         println!("{:?}", frame);
         v.push(frame);

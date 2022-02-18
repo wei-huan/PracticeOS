@@ -145,6 +145,7 @@ impl PageTable {
         self.find_pte(vpn).map(|pte| *pte)
     }
 
+    // 按satp格式要求构造64位数
     pub fn token(&self) -> usize {
         8usize << 60 | self.root_ppn.0
     }
