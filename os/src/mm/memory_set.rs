@@ -234,17 +234,18 @@ impl MemorySet {
     }
 }
 
+// 逻辑段中没有页表，只有虚实地址的映射关系
 // 连续的虚拟地址区间，该区间内包含的所有虚拟页面都以一种相同的方式映射到物理页帧，具有可读/可写/可执行等属性。
 // 其实就是数据段，代码段和bss段那些的抽象
 pub struct MapArea {
     vpn_range: VPNRange,
+    // 保存了该逻辑段内的每个虚拟页面和它被映射到的物理页帧
     data_frames: BTreeMap<VirtPageNum, FrameTracker>,
     map_type: MapType,
     map_perm: MapPermission,
 }
 
 impl MapArea {
-
     // 创建某个虚拟段
     pub fn new(
         start_va: VirtAddr,
@@ -264,6 +265,7 @@ impl MapArea {
 
     // 不是映射一个逻辑段，实际在映射一个页
     pub fn map_one(&mut self, page_table: &mut PageTable, vpn: VirtPageNum) {
+        // 先确定映射结果
         let ppn: PhysPageNum;
         match self.map_type {
             MapType::Identical => {
@@ -276,6 +278,7 @@ impl MapArea {
             }
         }
         let pte_flags = PTEFlags::from_bits(self.map_perm.bits).unwrap();
+        // 再建立关系
         page_table.map(vpn, ppn, pte_flags);
     }
 

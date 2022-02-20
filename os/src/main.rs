@@ -44,23 +44,26 @@ fn clear_bss() {
     }
 }
 
+extern "C" {
+    fn stext();
+    fn etext();
+    fn srodata();
+    fn erodata();
+    fn sdata();
+    fn edata();
+    fn sbss_with_stack();
+    fn sbss();
+    fn ebss();
+    fn ekernel();
+    fn strampoline();
+}
+
 #[allow(unused)]
 fn show_layout(){
-    extern "C" {
-        fn stext();
-        fn etext();
-        fn srodata();
-        fn erodata();
-        fn sdata();
-        fn edata();
-        fn sbss_with_stack();
-        fn sbss();
-        fn ebss();
-        fn ekernel();
-        fn strampoline();
-    }
+    let stext_clone = (stext as usize).clone();
+    let etext_clone = (etext as usize).clone();
 
-    println!("text: 0x{:X} - 0x{:X}", stext as usize, etext as usize);
+    println!("text({}MiB): 0x{:X} - 0x{:X}", (((etext_clone - stext_clone) as f32) / ((1024 * 1024) as f32)), stext as usize, etext as usize);
     println!("strampoline: 0x{:X}", strampoline as usize);
     println!("rodata: 0x{:X} - 0x{:X}", srodata as usize, erodata as usize);
     println!("data: 0x{:X} - 0x{:X}", sdata as usize, edata as usize);
@@ -70,7 +73,6 @@ fn show_layout(){
 
 #[no_mangle]
 pub fn rust_main() -> ! {
-    show_layout();
     clear_bss();
     println!("[kernel] Hello, world!");
     mm::init();

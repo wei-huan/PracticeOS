@@ -7,6 +7,7 @@ const VA_WIDTH_SV39: usize = 39;
 const PPN_WIDTH_SV39: usize = PA_WIDTH_SV39 - PAGE_SIZE_BITS;
 const VPN_WIDTH_SV39: usize = VA_WIDTH_SV39 - PAGE_SIZE_BITS;
 
+// 为通过多种方便且安全的 类型转换 (Type Convertion) 来构建页表，把物理地址、虚拟地址、物理页号、虚拟页号抽象成不同类型
 /// Definitions
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct PhysAddr(pub usize);
@@ -21,7 +22,6 @@ pub struct PhysPageNum(pub usize);
 pub struct VirtPageNum(pub usize);
 
 /// Debugging
-
 impl Debug for VirtAddr {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_fmt(format_args!("VA:{:#x}", self.0))

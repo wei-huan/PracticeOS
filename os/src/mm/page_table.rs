@@ -55,9 +55,10 @@ impl PageTableEntry {
     }
 }
 
-// 页表结构体，就是物理页表
+// 页表结构体，就是一个应用拥有的页表项PTE集合
 pub struct PageTable {
     root_ppn: PhysPageNum,
+    // 加入frames这一项可以以页表为单位对页表项集中管理
     frames: Vec<FrameTracker>,
 }
 
@@ -124,8 +125,8 @@ impl PageTable {
         result
     }
 
+    // 创建虚拟地址到物理地址的映射时使用，参数ppn是由frame_allocator分配来的，是第三级页表上的物理页号中要填写的地址，也就是应用查找的实际物理地址
     #[allow(unused)]
-    // 创建虚拟地址到物理地址的映射时使用
     pub fn map(&mut self, vpn: VirtPageNum, ppn: PhysPageNum, flags: PTEFlags) {
         let pte = self.find_pte_create(vpn).unwrap();
         assert!(!pte.is_valid(), "vpn {:?} is mapped before mapping", vpn);
@@ -133,6 +134,7 @@ impl PageTable {
         // 在第三级页表上填写物理地址相应的信息
         *pte = PageTableEntry::new(ppn, flags | PTEFlags::V);
     }
+
     #[allow(unused)]
     pub fn unmap(&mut self, vpn: VirtPageNum) {
         let pte = self.find_pte(vpn).unwrap();
@@ -149,6 +151,11 @@ impl PageTable {
     pub fn token(&self) -> usize {
         8usize << 60 | self.root_ppn.0
     }
+
+    // 根据虚拟地址找第三级页表上相应的页表项, 没有就创建
+    pub fn translate_create(&mut self, vpn: VirtPageNum) -> Option<PageTableEntry> {
+        self.find_pte_create(vpn).map(|pte| *pte)
+    }
 }
 
 pub fn translated_byte_buffer(token: usize, ptr: *const u8, len: usize) -> Vec<&'static mut [u8]> {
@@ -162,6 +169,7 @@ pub fn translated_byte_buffer(token: usize, ptr: *const u8, len: usize) -> Vec<&
         let ppn = page_table.translate(vpn).unwrap().ppn();
         vpn.step();
         let mut end_va: VirtAddr = vpn.into();
+        // end_va 和 end 比谁小
         end_va = end_va.min(VirtAddr::from(end));
         if end_va.page_offset() == 0 {
             v.push(&mut ppn.get_bytes_array()[start_va.page_offset()..]);
@@ -171,4 +179,37 @@ pub fn translated_byte_buffer(token: usize, ptr: *const u8, len: usize) -> Vec<&
         start = end_va.into();
     }
     v
+}
+
+// 分配页表，成功返回实际分配的物理页，失败返回-1
+pub fn alloc_pages(token: usize, start: usize, len: usize, port: usize) -> isize{
+    let mut page_table = PageTable::from_token(token);
+    println!("start:0x{:X}", start);
+    println!("port:{:b}", port);
+    let end = start + len;
+    println!("end:0x{:X}", end);
+    let start_va = VirtAddr::from(start);
+    println!("start_va:{:?}", start_va);
+    let start_vpn = start_va.floor();
+    println!("start_vpn:{:?}", start_vpn);
+    let end_va = VirtAddr::from(end);
+    println!("end_va:{:?}", end_va);
+    let end_vpn = end_va.ceil();
+    println!("end_vpn:{:?}", end_vpn);
+    let mut vpn = start_vpn;
+    println!("vpn:{:?}", vpn);
+    while vpn < end_vpn {
+        let pte = page_table.translate_create(vpn).unwrap();
+        if pte.is_valid(){
+            return -1;
+        } else {
+            let frame = frame_alloc().unwrap();
+            let ppn = frame.ppn;
+            println!("ppn:{:?}", ppn);
+            let flags = PTEFlags{bits: ((port as u8) << 1)};
+            page_table.map(vpn, ppn, flags);
+        }
+        vpn = VirtPageNum::from(usize::from(vpn) + 1);
+    }
+    0
 }

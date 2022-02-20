@@ -13,13 +13,13 @@ pub const MEMORY_END: usize = 0x80800000;
 // 一页 4KiB
 pub const PAGE_SIZE: usize = 0x1000;
 
-// 页内地址占据12bit位
+// 页内地址占据 12bit 位
 pub const PAGE_SIZE_BITS: usize = 0xc;
 
-// TRAMPOLINE的地址
+// TRAMPOLINE 的地址
 pub const TRAMPOLINE: usize = usize::MAX - PAGE_SIZE + 1;
 
-// TRAP_CONTEXT的地址
+// TRAP_CONTEXT 的地址
 pub const TRAP_CONTEXT: usize = TRAMPOLINE - PAGE_SIZE;
 
 // 返回应用程序的内核地址空间的内核栈位置

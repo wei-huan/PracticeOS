@@ -9,6 +9,8 @@
     .globl __alltraps
     .globl __restore
     .align 2
+
+# 在应用程序地址空间的次高页面保存Trap上下文，此时sscratch是次高页面的地址
 __alltraps:
     csrrw sp, sscratch, sp
     # now sp->*TrapContext in user space, sscratch->user stack
@@ -31,6 +33,7 @@ __alltraps:
     # read user stack from sscratch and save it in TrapContext
     csrr t2, sscratch
     sd t2, 2*8(sp)
+    // 在这里我们就保存完了上文，接下来要将TrapContext中的内核satp等信息写入寄存器
     # load kernel_satp into t0
     ld t0, 34*8(sp)
     # load trap_handler into t1

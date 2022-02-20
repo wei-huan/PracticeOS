@@ -34,3 +34,6 @@ pub fn yield_() -> isize {
 pub fn get_time() -> isize {
     sys_get_time()
 }
+pub fn mmap(start: usize, len: usize, port: usize) -> isize {
+    sys_mmap(start, len, port)
+}

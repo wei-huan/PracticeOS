@@ -77,9 +77,12 @@ pub fn trap_handler() -> ! {
 }
 
 #[no_mangle]
+// trap_handler 完成后的返回
 pub fn trap_return() -> ! {
+    // 设置跳板页面的 __alltraps 为 trap 入口
     set_user_trap_entry();
     let trap_cx_ptr = TRAP_CONTEXT;
+    // 准备好 __restore 需要两个参数：分别是 Trap 上下文在应用地址空间中的虚拟地址和要继续执行的应用地址空间的 token
     let user_satp = current_user_token();
     extern "C" {
         fn __alltraps();

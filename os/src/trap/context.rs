@@ -14,6 +14,8 @@ impl TrapContext {
     pub fn set_sp(&mut self, sp: usize) {
         self.x[2] = sp;
     }
+
+    // 设置任务初始化上下文
     pub fn app_init_context(
         entry: usize,
         sp: usize,
