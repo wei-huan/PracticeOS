@@ -28,7 +28,6 @@ pub fn heap_test() {
         fn ebss();
     }
     let bss_range = sbss as usize..ebss as usize;
-    println!("bss_range:0x{:x} - 0x{:x}", sbss as usize, ebss as usize);
     let a = Box::new(5);
     assert_eq!(*a, 5);
     assert!(bss_range.contains(&(a.as_ref() as *const _ as usize)));

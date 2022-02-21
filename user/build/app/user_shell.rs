@@ -24,7 +24,6 @@ pub fn main() -> i32 {
     loop {
         let c = getchar();
         match c {
-            // 回车键
             LF | CR => {
                 println!("");
                 if !line.is_empty() {
@@ -47,7 +46,6 @@ pub fn main() -> i32 {
                 }
                 print!(">> ");
             }
-            // 退格键
             BS | DL => {
                 if !line.is_empty() {
                     print!("{}", BS as char);

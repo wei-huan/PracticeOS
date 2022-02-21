@@ -19,14 +19,12 @@ pub fn init() {
     set_kernel_trap_entry();
 }
 
-// 内核态触发的trap的入口，一旦进入内核后再次触发到 S态 Trap，则硬件在设置一些 CSR 寄存器之后，会跳过对通用寄存器的保存过程，直接跳转到 trap_from_kernel 函数。
 fn set_kernel_trap_entry() {
     unsafe {
         stvec::write(trap_from_kernel as usize, TrapMode::Direct);
     }
 }
 
-// 用户态触发的trap的入口
 fn set_user_trap_entry() {
     unsafe {
         stvec::write(TRAMPOLINE as usize, TrapMode::Direct);
@@ -91,12 +89,9 @@ pub fn trap_handler() -> ! {
 }
 
 #[no_mangle]
-// trap_handler 完成后的返回
 pub fn trap_return() -> ! {
-    // 设置跳板页面的 __alltraps 为 trap 入口
     set_user_trap_entry();
     let trap_cx_ptr = TRAP_CONTEXT;
-    // 准备好 __restore 需要两个参数：分别是 Trap 上下文在应用地址空间中的虚拟地址和要继续执行的应用地址空间的 token
     let user_satp = current_user_token();
     extern "C" {
         fn __alltraps();
@@ -105,7 +100,6 @@ pub fn trap_return() -> ! {
     let restore_va = __restore as usize - __alltraps as usize + TRAMPOLINE;
     unsafe {
         asm!(
-            // fence.i 指令清空指令缓存 i-cache
             "fence.i",
             "jr {restore_va}",
             restore_va = in(reg) restore_va,
@@ -116,7 +110,6 @@ pub fn trap_return() -> ! {
     }
 }
 
-// 弱化了 S态 –> S态的 Trap 处理过程：直接 panic
 #[no_mangle]
 pub fn trap_from_kernel() -> ! {
     panic!("a trap {:?} from kernel!", scause::read().cause());

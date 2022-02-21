@@ -7,7 +7,6 @@ const VA_WIDTH_SV39: usize = 39;
 const PPN_WIDTH_SV39: usize = PA_WIDTH_SV39 - PAGE_SIZE_BITS;
 const VPN_WIDTH_SV39: usize = VA_WIDTH_SV39 - PAGE_SIZE_BITS;
 
-// 为通过多种方便且安全的 类型转换 (Type Convertion) 来构建页表，把物理地址、虚拟地址、物理页号、虚拟页号抽象成不同类型
 /// Definitions
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct PhysAddr(pub usize);
@@ -22,6 +21,7 @@ pub struct PhysPageNum(pub usize);
 pub struct VirtPageNum(pub usize);
 
 /// Debugging
+
 impl Debug for VirtAddr {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_fmt(format_args!("VA:{:#x}", self.0))
@@ -140,8 +140,6 @@ impl From<PhysPageNum> for PhysAddr {
 }
 
 impl VirtPageNum {
-
-    // 根据虚拟地址获取多级页表的每级页框号
     pub fn indexes(&self) -> [usize; 3] {
         let mut vpn = self.0;
         let mut idx = [0usize; 3];
@@ -169,7 +167,7 @@ impl PhysPageNum {
     }
     pub fn get_mut<T>(&self) -> &'static mut T {
         let pa: PhysAddr = (*self).into();
-        unsafe { (pa.0 as *mut T).as_mut().unwrap() }
+        pa.get_mut()
     }
 }
 
@@ -245,6 +243,4 @@ where
         }
     }
 }
-
-// VPNRange 描述一段虚拟页号的连续区间，表示该逻辑段在地址区间中的位置和长度。
 pub type VPNRange = SimpleRange<VirtPageNum>;

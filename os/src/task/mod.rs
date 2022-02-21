@@ -50,7 +50,6 @@ pub fn exit_current_and_run_next(exit_code: i32) {
     // do not move to its parent but under initproc
 
     // ++++++ access initproc TCB exclusively
-    // 将子进程全部挂到初始进程下
     {
         let mut initproc_inner = INITPROC.inner_exclusive_access();
         for child in inner.children.iter() {
@@ -59,10 +58,9 @@ pub fn exit_current_and_run_next(exit_code: i32) {
         }
     }
     // ++++++ release parent PCB
-    // 第 32 行将当前进程的孩子向量清空
+
     inner.children.clear();
     // deallocate user space
-    // 应用地址空间被回收（即进程的数据和代码对应的物理页帧都被回收），但用来存放页表的那些物理页帧此时还不会被回收（会由父进程最后回收子进程剩余的占用资源）
     inner.memory_set.recycle_data_pages();
     drop(inner);
     // **** release current PCB

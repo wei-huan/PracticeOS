@@ -60,7 +60,6 @@ pub fn kernel_stack_position(app_id: usize) -> (usize, usize) {
     (bottom, top)
 }
 
-// 内核栈
 pub struct KernelStack {
     pid: usize,
 }

@@ -1,4 +1,4 @@
-use crate::mm::{translated_byte_buffer, alloc_pages};
+use crate::mm::{translated_byte_buffer};
 use crate::sbi::console_getchar;
 use crate::task::{current_user_token, suspend_current_and_run_next};
 
@@ -53,13 +53,13 @@ pub fn sys_read(fd: usize, buf: *const u8, len: usize) -> isize {
 //      len 映射字节长度，可以为 0
 //      port：第 0 位表示是否可读，第 1 位表示是否可写，第 2 位表示是否可执行。其他位无效且必须为 0
 // 返回值：执行成功则返回 0，错误返回 -1
-pub fn sys_mmap(start: usize, len: usize, port: usize) -> isize {
-    if (start & 0xFFF) > 0 || (port & !0x7) > 0 || (port & 0x7) == 0{
-        return -1;
-    }
+// pub fn sys_mmap(start: usize, len: usize, port: usize) -> isize {
+//     if (start & 0xFFF) > 0 || (port & !0x7) > 0 || (port & 0x7) == 0{
+//         return -1;
+//     }
 
-    alloc_pages(current_user_token(), start, len, port)
-}
+//     alloc_pages(current_user_token(), start, len, port)
+// }
 
 // syscall ID：215
 // 取消到 [start, start + len) 虚存的映射

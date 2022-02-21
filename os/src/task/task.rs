@@ -17,25 +17,25 @@ pub struct TaskControlBlock {
 }
 
 pub struct TaskControlBlockInner {
-    pub task_status: TaskStatus,
-    pub task_cx: TaskContext,
-    // 应用的地址空间 memory_set
-    pub memory_set: MemorySet,
-    // 位于应用地址空间次高页的 Trap 上下文被实际存放在物理页帧的物理页号
     pub trap_cx_ppn: PhysPageNum,
     pub base_size: usize,
-    // 使用 Weak 而非 Arc 来包裹另一个任务控制块，因此这个智能指针将不会影响父进程的引用计数。
+    pub task_cx: TaskContext,
+    pub task_status: TaskStatus,
+    pub memory_set: MemorySet,
     pub parent: Option<Weak<TaskControlBlock>>,
     pub children: Vec<Arc<TaskControlBlock>>,
-    // 进程调用 exit 系统调用主动退出或者执行出错由内核终止的时候，它的退出码 exit_code 会被内核保存在它的任务控制块中，并等待它的父进程通过 waitpid 回收它的资源的同时也收集它的 PID 以及退出码。
     pub exit_code: i32,
 }
 
 impl TaskControlBlockInner {
+    /*
+    pub fn get_task_cx_ptr2(&self) -> *const usize {
+        &self.task_cx_ptr as *const usize
+    }
+    */
     pub fn get_trap_cx(&self) -> &'static mut TrapContext {
         self.trap_cx_ppn.get_mut()
     }
-    // 返回用户代码的satp
     pub fn get_user_token(&self) -> usize {
         self.memory_set.token()
     }
@@ -79,9 +79,6 @@ impl TaskControlBlock {
                 })
             },
         };
-        // 初始化位于该进程应用地址空间中的 Trap 上下文，
-        // 使得第一次进入用户态的时候时候能正确跳转到应用入口点并设置好用户栈，
-        // 同时也保证在 Trap 的时候用户态能正确进入内核态。
         // prepare TrapContext in user space
         let trap_cx = task_control_block.inner_exclusive_access().get_trap_cx();
         *trap_cx = TrapContext::app_init_context(

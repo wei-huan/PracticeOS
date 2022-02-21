@@ -18,10 +18,11 @@ use process::*;
 
 pub fn syscall(syscall_id: usize, args: [usize; 3]) -> isize {
     match syscall_id {
+        SYSCALL_READ => sys_read(args[0], args[1] as *const u8, args[2]),
         SYSCALL_WRITE => sys_write(args[0], args[1] as *const u8, args[2]),
         SYSCALL_EXIT => sys_exit(args[0] as i32),
         SYSCALL_YIELD => sys_yield(),
-        SYSCALL_MMAP => sys_mmap(args[0], args[1], args[2]),
+        // SYSCALL_MMAP => sys_mmap(args[0], args[1], args[2]),
         // SYSCALL_MUNMAP => sys_munmap(args[0], args[1]),
         SYSCALL_GET_TIME => sys_get_time(),
         SYSCALL_GETPID => sys_getpid(),
