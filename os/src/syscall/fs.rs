@@ -1,71 +1,70 @@
-use crate::mm::{translated_byte_buffer};
-use crate::sbi::console_getchar;
-use crate::task::{current_user_token, suspend_current_and_run_next};
-
-const FD_STDIN: usize = 0;
-const FD_STDOUT: usize = 1;
+use crate::fs::{open_file, OpenFlags};
+use crate::mm::{translated_byte_buffer, translated_str, UserBuffer};
+use crate::task::{current_task, current_user_token};
 
 pub fn sys_write(fd: usize, buf: *const u8, len: usize) -> isize {
-    match fd {
-        FD_STDOUT => {
-            let buffers = translated_byte_buffer(current_user_token(), buf, len);
-            for buffer in buffers {
-                print!("{}", core::str::from_utf8(buffer).unwrap());
-            }
-            len as isize
+    let token = current_user_token();
+    let task = current_task().unwrap();
+    let inner = task.inner_exclusive_access();
+    if fd >= inner.fd_table.len() {
+        return -1;
+    }
+    if let Some(file) = &inner.fd_table[fd] {
+        if !file.writable() {
+            return -1;
         }
-        _ => {
-            panic!("Unsupported fd in sys_write!");
-        }
+        let file = file.clone();
+        // release current task TCB manually to avoid multi-borrow
+        drop(inner);
+        file.write(UserBuffer::new(translated_byte_buffer(token, buf, len))) as isize
+    } else {
+        -1
     }
 }
 
 pub fn sys_read(fd: usize, buf: *const u8, len: usize) -> isize {
-    match fd {
-        FD_STDIN => {
-            assert_eq!(len, 1, "Only support len = 1 in sys_read!");
-            let mut c: usize;
-            loop {
-                c = console_getchar();
-                if c == 0 {
-                    suspend_current_and_run_next();
-                    continue;
-                } else {
-                    break;
-                }
-            }
-            let ch = c as u8;
-            let mut buffers = translated_byte_buffer(current_user_token(), buf, len);
-            unsafe {
-                buffers[0].as_mut_ptr().write_volatile(ch);
-            }
-            1
+    let token = current_user_token();
+    let task = current_task().unwrap();
+    let inner = task.inner_exclusive_access();
+    if fd >= inner.fd_table.len() {
+        return -1;
+    }
+    if let Some(file) = &inner.fd_table[fd] {
+        let file = file.clone();
+        if !file.readable() {
+            return -1;
         }
-        _ => {
-            panic!("Unsupported fd in sys_read!");
-        }
+        // release current task TCB manually to avoid multi-borrow
+        drop(inner);
+        file.read(UserBuffer::new(translated_byte_buffer(token, buf, len))) as isize
+    } else {
+        -1
     }
 }
 
-// syscall ID：222
-// 申请长度为 len 字节的物理内存（不要求实际物理内存位置，可以随便找一块），将其映射到 start 开始的虚存，内存页属性为 port
-// 参数：start 需要映射的虚存起始地址，要求按页对齐
-//      len 映射字节长度，可以为 0
-//      port：第 0 位表示是否可读，第 1 位表示是否可写，第 2 位表示是否可执行。其他位无效且必须为 0
-// 返回值：执行成功则返回 0，错误返回 -1
-// pub fn sys_mmap(start: usize, len: usize, port: usize) -> isize {
-//     if (start & 0xFFF) > 0 || (port & !0x7) > 0 || (port & 0x7) == 0{
-//         return -1;
-//     }
+pub fn sys_open(path: *const u8, flags: u32) -> isize {
+    let task = current_task().unwrap();
+    let token = current_user_token();
+    let path = translated_str(token, path);
+    if let Some(inode) = open_file(path.as_str(), OpenFlags::from_bits(flags).unwrap()) {
+        let mut inner = task.inner_exclusive_access();
+        let fd = inner.alloc_fd();
+        inner.fd_table[fd] = Some(inode);
+        fd as isize
+    } else {
+        -1
+    }
+}
 
-//     alloc_pages(current_user_token(), start, len, port)
-// }
-
-// syscall ID：215
-// 取消到 [start, start + len) 虚存的映射
-// 参数：start 需要映射的虚存起始地址，要求按页对齐
-//      len 映射字节长度，可以为 0
-// 返回值：执行成功则返回 0，错误返回 -1
-// pub fn sys_munmap(start: usize, len: usize) -> isize {
-
-// }
+pub fn sys_close(fd: usize) -> isize {
+    let task = current_task().unwrap();
+    let mut inner = task.inner_exclusive_access();
+    if fd >= inner.fd_table.len() {
+        return -1;
+    }
+    if inner.fd_table[fd].is_none() {
+        return -1;
+    }
+    inner.fd_table[fd].take();
+    0
+}
