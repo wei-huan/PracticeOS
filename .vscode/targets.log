@@ -6,7 +6,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Thu Apr 28 16:33:09 2022
+# Make data base, printed on Mon May  2 12:47:20 2022
 
 # Variables
 
@@ -43,13 +43,11 @@ CURDIR := /home/weihuan/WorkSpace/OS/PracticeOS
 # makefile
 SHELL = /bin/sh
 # environment
-VTE_VERSION = 6003
-# environment
 VSCODE_NLS_CONFIG = {"locale":"en-us","availableLanguages":{},"_languagePackSupport":true}
 # environment
 _ = /usr/bin/make
 # environment
-JOURNAL_STREAM = 8:57970
+JOURNAL_STREAM = 8:66565
 # environment
 XDG_CONFIG_DIRS = /etc/xdg/xdg-ubuntu:/etc/xdg
 # environment
@@ -69,29 +67,29 @@ MANDATORY_PATH = /usr/share/gconf/ubuntu.mandatory.path
 # environment
 XDG_DATA_DIRS = /usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop
 # environment
-DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus,guid=6725c0524d0c2a9e99991438626a2f8b
+DBUS_SESSION_BUS_ADDRESS = unix:path=/run/user/1000/bus
 # environment
 VSCODE_VERBOSE_LOGGING = true
 # environment
-MANAGERPID = 2557
+MANAGERPID = 2568
 # environment
 CLUTTER_IM_MODULE = fcitx
 # environment
-VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-6277cca4-8d2f-4416-8d19-de6d9fa1d1e1.sock
+VSCODE_IPC_HOOK_EXTHOST = /run/user/1000/vscode-ipc-ccb89422-7c7b-4921-ba91-44a8b27df7b3.sock
 # environment
 LC_NAME = zh_CN.UTF-8
 # environment
-VSCODE_CWD = /home/weihuan/WorkSpace/OS/PracticeOS
+VSCODE_CWD = /home/weihuan
 # environment
 GSETTINGS_SCHEMA_DIR = /home/weihuan/data
 # default
 MAKE_HOST := x86_64-pc-linux-gnu
 # environment
-PATH = /usr/local/cuda-11.6/bin:/home/weihuan/Tools/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-linux-ubuntu14/bin:/home/weihuan/anaconda3/bin:/home/weihuan/anaconda3/condabin:/home/weihuan/.cargo/bin:/home/weihuan/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/weihuan/bin:/opt/riscv/bin
+PATH = /home/weihuan/bin:/usr/local/cuda-11.6/bin:/home/weihuan/Tools/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-linux-ubuntu14/bin:/home/weihuan/anaconda3/bin:/home/weihuan/anaconda3/condabin:/home/weihuan/.cargo/bin:/home/weihuan/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/weihuan/bin:/opt/riscv/bin:/home/weihuan/bin:/opt/riscv/bin
 # environment
 GPG_AGENT_INFO = /run/user/1000/gnupg/S.gpg-agent:0:1
 # environment
-SESSION_MANAGER = local/weihuan-Lenovo-Legion-R9000P2021H:@/tmp/.ICE-unix/2773,unix/weihuan-Lenovo-Legion-R9000P2021H:/tmp/.ICE-unix/2773
+SESSION_MANAGER = local/weihuan-Lenovo-Legion-R9000P2021H:@/tmp/.ICE-unix/2787,unix/weihuan-Lenovo-Legion-R9000P2021H:/tmp/.ICE-unix/2787
 # environment
 XDG_RUNTIME_DIR = /run/user/1000
 # environment
@@ -101,19 +99,19 @@ VSCODE_LOG_STACK = false
 # environment
 ELECTRON_RUN_AS_NODE = 1
 # environment
-INVOCATION_ID = 242f3333f8c146b98ed5c11e08d32033
+INVOCATION_ID = 3315d7a74cd0404fa3bead6d48438dab
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # makefile (from 'Makefile', line 1)
 DIR := /home/weihuan/WorkSpace/OS/PracticeOS
 # environment
-LS_COLORS = rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+LS_COLORS = 
 # environment
 XDG_SESSION_DESKTOP = ubuntu
 # environment
 SSH_AUTH_SOCK = /run/user/1000/keyring/ssh
 # environment
-GIO_LAUNCHED_DESKTOP_FILE_PID = 3237
+GIO_LAUNCHED_DESKTOP_FILE_PID = 6856
 # automatic
 %F = $(notdir $%)
 # environment
@@ -129,7 +127,7 @@ PWD = /home/weihuan/WorkSpace/OS/PracticeOS
 # default
 .LOADED := 
 # environment
-SSH_AGENT_PID = 2732
+SSH_AGENT_PID = 2746
 # environment
 ORIGINAL_XDG_CURRENT_DESKTOP = ubuntu:GNOME
 # environment
@@ -145,8 +143,6 @@ LD_LIBRARY_PATH = /usr/local/cuda-10.1/lib64
 # environment
 LESSCLOSE = /usr/bin/lesspipe %s %s
 # environment
-VSCODE_CLI = 1
-# environment
 VSCODE_CODE_CACHE_PATH = /home/weihuan/.config/Code/CachedData/dfd34e8260c270da74b5c2d86d61aee4b6d56977
 # environment
 LOGNAME = weihuan
@@ -157,8 +153,6 @@ CONDA_PROMPT_MODIFIER = (base)
 # automatic
 +F = $(notdir $+)
 # environment
-ELECTRON_NO_ATTACH_CONSOLE = 1
-# environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # environment
 GNOME_DESKTOP_SESSION_ID = this-is-deprecated
@@ -168,8 +162,6 @@ GNOME_DESKTOP_SESSION_ID = this-is-deprecated
 LC_TIME = zh_CN.UTF-8
 # environment
 CONDA_DEFAULT_ENV = base
-# environment
-COLORTERM = truecolor
 # default
 MAKE = $(MAKE_COMMAND)
 # default
@@ -177,7 +169,7 @@ MAKECMDGOALS := all
 # environment
 QT_IM_MODULE = fcitx
 # environment
-SHLVL = 2
+SHLVL = 0
 # environment
 GNOME_SHELL_SESSION_MODE = ubuntu
 # default
@@ -237,19 +229,13 @@ LC_MEASUREMENT = zh_CN.UTF-8
 # environment
 LC_ALL = C
 # environment
-DBUS_STARTER_BUS_TYPE = session
-# environment
 CONDA_PYTHON_EXE = /home/weihuan/anaconda3/bin/python
 # environment
 QT4_IM_MODULE = fcitx
-# environment
-GNOME_TERMINAL_SCREEN = /org/gnome/Terminal/screen/d784f9b2_50d0_49e3_96fc_013beacb622f
 # automatic
 ^F = $(notdir $^)
 # makefile (from 'Makefile', line 2)
 USER_DIR := /home/weihuan/WorkSpace/OS/PracticeOS/user
-# environment
-GNOME_TERMINAL_SERVICE = :1.2420
 # default
 SUFFIXES := 
 # environment
@@ -271,17 +257,13 @@ GIO_LAUNCHED_DESKTOP_FILE = /usr/share/applications/code.desktop
 # environment
 CONDA_PREFIX = /home/weihuan/anaconda3
 # environment
-TERM = xterm-256color
-# environment
-VSCODE_PID = 3237
-# environment
-DBUS_STARTER_ADDRESS = unix:path=/run/user/1000/bus,guid=6725c0524d0c2a9e99991438626a2f8b
+VSCODE_PID = 6856
 # environment
 _CE_CONDA = 
 # environment
 LANG = C
 # variable set hash-table stats:
-# Load=135/1024=13%, Rehash=0, Collisions=24/170=14%
+# Load=126/1024=12%, Rehash=0, Collisions=21/161=13%
 
 # Pattern-specific Variable Values
 
@@ -289,9 +271,9 @@ LANG = C
 
 # Directories
 
-# . (device 66310, inode 3413729): 16 files, no impossibilities.
+# . (device 66310, inode 3413729): 15 files, no impossibilities.
 
-# 16 files, no impossibilities in 1 directories.
+# 15 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -306,6 +288,7 @@ all:
 #  File does not exist.
 #  File has been updated.
 #  Needs to be updated (-q is set).
+ 
 # automatic
 # @ := all
 # automatic
@@ -353,7 +336,6 @@ debug:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
 #  File has not been updated.
- 
 
 # files hash-table stats:
 # Load=5/1024=0%, Rehash=0, Collisions=0/17=0%
@@ -363,12 +345,12 @@ debug:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 22 / storage = 185 B / avg = 8 B
-# current buf: size = 8162 B / used = 185 B / count = 22 / avg = 8 B
+# strcache buffers: 1 (0) / strings = 21 / storage = 176 B / avg = 8 B
+# current buf: size = 8162 B / used = 176 B / count = 21 / avg = 8 B
 
-# strcache performance: lookups = 30 / hit rate = 26%
+# strcache performance: lookups = 29 / hit rate = 27%
 # hash-table stats:
-# Load=22/8192=0%, Rehash=0, Collisions=1/30=3%
-# Finished Make data base on Thu Apr 28 16:33:09 2022
+# Load=21/8192=0%, Rehash=0, Collisions=1/29=3%
+# Finished Make data base on Mon May  2 12:47:20 2022
 
  
