@@ -32,3 +32,18 @@ pub fn main() -> i32 {
     println!("forktest pass.");
     0
 }
+
+pub fn thread_a() -> ! {
+    for _ in 0..1000 {
+        print!("a");
+    }
+    exit(1)
+}
+
+use user_lib::thread_create;
+pub fn main2() -> i32 {
+    thread_create(thread_a as usize, 0);
+    if fork() == 0 {
+    } else {
+    }
+}

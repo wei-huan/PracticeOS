@@ -32,6 +32,7 @@ pub struct ProcessControlBlockInner {
 }
 
 impl ProcessControlBlockInner {
+    #[allow(unused)]
     pub fn get_user_token(&self) -> usize {
         self.memory_set.token()
     }
